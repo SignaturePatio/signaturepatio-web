@@ -1,0 +1,68 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #13100b;
+}
+
+::selection {
+  background: #e8632e;
+  color: #13100b;
+}
+
+@keyframes scrollx {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes glowpulse {
+  0%, 100% { opacity: .5; }
+  50%       { opacity: .85; }
+}
+
+.marq {
+  animation: scrollx 30s linear infinite;
+}
+
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 3px;
+  border-radius: 3px;
+  background: #3a3024;
+  outline: none;
+  width: 100%;
+  cursor: pointer;
+}
+
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #13100b;
+  border: 2px solid #e8632e;
+  box-shadow: 0 0 0 3px rgba(232, 99, 46, .18);
+  cursor: pointer;
+}
+
+input[type='range']::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #13100b;
+  border: 2px solid #e8632e;
+  cursor: pointer;
+}
+
+a {
+  -webkit-tap-highlight-color: transparent;
+}
