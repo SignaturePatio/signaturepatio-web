@@ -50,7 +50,7 @@ export default function Hero() {
             {[
               { val: '+200', label: 'PATIOS LIVRÉS' },
               { val: '25 ANS', label: 'GARANTIE COMPOSITE' },
-              { val: '4,9', star: true, label: 'SATISFACTION CLIENT' },
+              { val: '5', star: true, label: 'SATISFACTION CLIENT' },
             ].map(({ val, star, label }) => (
               <div key={label}>
                 <div style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontWeight: 800, fontSize: 34, letterSpacing: '-.02em', display: 'flex', alignItems: 'center', gap: 5 }}>
