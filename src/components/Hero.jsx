@@ -49,7 +49,7 @@ export default function Hero() {
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 34, marginTop: 44 }}>
             {[
               { val: '+200', label: 'PATIOS LIVRÉS' },
-              { val: '25 ANS', label: 'GARANTIE COMPOSITE' },
+              { val: '25 ANS', label: 'GARANTIE COMPOSITE PAR LE MANIFACTURIER' },
               { val: '5', star: true, label: 'SATISFACTION CLIENT' },
             ].map(({ val, star, label }) => (
               <div key={label}>
