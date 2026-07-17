@@ -117,7 +117,7 @@ function Scene3D({ s, onMouseDown, onTouchStart }) {
     <div style={{ position: 'relative', width: '100%', height: '100%', minHeight: 440 }}>
       <div style={{ position: 'absolute', left: '50%', top: '62%', width: W * 1.15, height: D * 0.66, transform: 'translate(-50%,-50%)', borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(0,0,0,.4), rgba(0,0,0,0) 70%)', filter: 'blur(3px)' }} />
       <div
-        style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', perspective: 1300, cursor: 'grab' }}
+        style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', perspective: 1300, cursor: 'grab', touchAction: 'none' }}
         onMouseDown={onMouseDown}
         onTouchStart={onTouchStart}
       >
@@ -369,6 +369,7 @@ export default function Configurateur() {
     const sy = e.touches ? e.touches[0].clientY : e.clientY
     const { rotY: srY, rotX: srX } = sRef.current
     const move = ev => {
+      if (ev.touches) ev.preventDefault()
       const x = ev.touches ? ev.touches[0].clientX : ev.clientX
       const y = ev.touches ? ev.touches[0].clientY : ev.clientY
       setS(prev => ({ ...prev, rotY: srY + (x - sx) * 0.4, rotX: Math.max(-80, Math.min(-10, srX + (y - sy) * 0.3)) }))
@@ -381,7 +382,7 @@ export default function Configurateur() {
     }
     window.addEventListener('mousemove', move)
     window.addEventListener('mouseup', up)
-    window.addEventListener('touchmove', move, { passive: true })
+    window.addEventListener('touchmove', move, { passive: false })
     window.addEventListener('touchend', up)
   }, [])
 
