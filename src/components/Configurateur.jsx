@@ -41,11 +41,12 @@ function pricing(s) {
   const lighting= s.lighting ? Math.max(railLen, 18) * 19 : 0
   const skirt   = s.skirt ? railLen * Math.max(s.h, 1) * 14 : 0
   const removal = s.removal ? 850 : 0
-  const raw  = surface + railing + stairs + panels + lighting + skirt + removal
+  const gravelBase = s.gravelBase ? area * 4.5 : 0
+  const raw  = surface + railing + stairs + panels + lighting + skirt + removal + gravelBase
   const sub  = Math.max(raw, 3800)
   const tax  = sub * 0.14975
   const total= sub + tax
-  return { area, railLen, surface, railing, stairs, panels, lighting, skirt, removal, sub, tax, total,
+  return { area, railLen, surface, railing, stairs, panels, lighting, skirt, removal, gravelBase, sub, tax, total,
     low: total * 0.92, high: total * 1.08, minApplied: raw < 3800 }
 }
 
@@ -243,6 +244,7 @@ function buildMailto({ form, quote, lineItems, config }) {
     `Éclairage DEL : ${config.lighting ? 'Oui' : 'Non'}`,
     `Jupe de patio : ${config.skirt ? 'Oui' : 'Non'}`,
     `Retrait ancien patio : ${config.removal ? 'Oui' : 'Non'}`,
+    `Base sous-patio (en roche) : ${config.gravelBase ? 'Oui' : 'Non'}`,
     '',
     '━━━ DÉTAIL DU PRIX ━━━',
     ...lineItems.map(([l, v]) => `${l.padEnd(30)} ${fmt(v)}`),
@@ -355,7 +357,7 @@ export default function Configurateur() {
     w: 14, l: 16, h: 3,
     material: 'composite', color: 'oak',
     railing: 'alu-bois', steps: 4, panels: 0,
-    lighting: false, skirt: false, removal: false,
+    lighting: false, skirt: false, removal: false, gravelBase: false,
     rotY: -32, rotX: -56,
   })
   const [showModal, setShowModal] = useState(false)
@@ -397,12 +399,13 @@ export default function Configurateur() {
     p.lighting > 0 && ['Éclairage DEL',                               p.lighting],
     p.skirt    > 0 && ['Jupe de patio',                               p.skirt],
     p.removal  > 0 && ['Retrait ancien patio',                        p.removal],
+    p.gravelBase > 0 && ['Base sous-patio (en roche) · ' + p.area + ' pi²', p.gravelBase],
   ].filter(Boolean)
 
   const config = {
     w: s.w, l: s.l, h: s.h,
     steps: s.steps, panels: s.panels,
-    lighting: s.lighting, skirt: s.skirt, removal: s.removal,
+    lighting: s.lighting, skirt: s.skirt, removal: s.removal, gravelBase: s.gravelBase,
     materialName: matObj(s).name,
     colorName:    colorObj(s)[1],
     railingName:  railObj(s).name,
@@ -455,6 +458,7 @@ export default function Configurateur() {
             <ToggleRow label="Éclairage DEL intégré"            on={s.lighting} onToggle={() => set({ lighting: !s.lighting })} />
             <ToggleRow label="Jupe de patio (fermer le dessous)" on={s.skirt}   onToggle={() => set({ skirt: !s.skirt })} />
             <ToggleRow label="Retirer l'ancien patio"           on={s.removal} onToggle={() => set({ removal: !s.removal })} />
+            <ToggleRow label="Base sous-patio (en roche)"       on={s.gravelBase} onToggle={() => set({ gravelBase: !s.gravelBase })} />
           </div>
 
           {/* Summary */}
