@@ -24,6 +24,12 @@ const COMPOSITE_TYPES = [
   { id: 'timbertech', name: 'TimberTech',   rate: 82 },
 ]
 
+const PANEL_TYPES = [
+  { id: 'bois-traite', name: 'Bois traité', rate: 385 },
+  { id: 'composite',   name: 'Composite',   rate: 650 },
+  { id: 'aluminium',   name: 'Aluminium',   rate: 890 },
+]
+
 const RAILINGS = [
   { id: 'none',     name: 'Aucune',      rate: 0  },
   { id: 'alu-bois', name: 'Alu & bois',  rate: 46 },
@@ -38,6 +44,7 @@ function colorObj(s) { const l = colorList(s); return l.find(c => c[0] === s.col
 function railObj(s)  { return RAILINGS.find(r => r.id === s.railing) || RAILINGS[0] }
 function compTypeObj(s) { return COMPOSITE_TYPES.find(c => c.id === s.compositeType) || COMPOSITE_TYPES[0] }
 function matRate(s)  { return s.material === 'composite' ? compTypeObj(s).rate : matObj(s).rate }
+function panelTypeObj(s) { return PANEL_TYPES.find(p => p.id === s.panelType) || PANEL_TYPES[0] }
 
 function pricing(s) {
   const area    = s.w * s.l
@@ -45,9 +52,9 @@ function pricing(s) {
   const surface = area * matRate(s)
   const railing = (s.railing !== 'none' && s.h >= 2) ? railLen * railObj(s).rate : 0
   const stairs  = 0
-  const panels  = s.panels * 385
+  const panels  = s.panels * panelTypeObj(s).rate
   const lighting= s.lighting ? Math.max(railLen, 18) * 19 : 0
-  const skirt   = s.skirt ? railLen * Math.max(s.h, 1) * 14 : 0
+  const skirt   = (s.skirt / 3) * railLen * Math.max(s.h, 1) * 14
   const removal = s.removal ? 850 : 0
   const gravelBase = s.gravelBase ? area * 4.5 : 0
   const pool = s.pool ? 6200 : 0
@@ -107,10 +114,10 @@ function Scene3D({ s, onMouseDown, onTouchStart }) {
 
   let pool = null
   if (s.pool) {
-    const diameter = Math.min(W, D) * 0.46
-    const margin   = Math.max(scale * 1.1, 10)
-    const cx = W / 2 - diameter / 2 - margin
-    const cy = D / 2 - diameter / 2 - margin
+    const diameter = Math.min(W, D) * 0.58
+    const inset    = diameter * 0.16
+    const cx = W / 2 - inset
+    const cy = D / 2 - inset
     const copingStyle = {
       borderRadius: '50%',
       background: '#d8cdb8',
@@ -264,6 +271,34 @@ function ToggleRow({ label, on, onToggle }) {
   )
 }
 
+function FaceCountRow({ label, value, onChange }) {
+  return (
+    <div style={{
+      padding: '12px 14px', borderRadius: 10, marginBottom: 7,
+      border: `1px solid ${value > 0 ? ACCENT : '#322a1e'}`, background: value > 0 ? 'rgba(232,99,46,.12)' : '#16120c',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <span style={{ color: '#e0d6c4', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600 }}>{label}</span>
+      </div>
+      <div style={{ display: 'flex', gap: 8 }}>
+        {[0, 1, 2, 3].map(n => {
+          const on = n === value
+          return (
+            <button key={n} onClick={() => onChange(n)} style={{
+              flex: 1, padding: '8px 0', borderRadius: 8, cursor: 'pointer',
+              border: `1px solid ${on ? ACCENT : '#322a1e'}`, background: on ? ACCENT : '#0f0c08',
+              color: on ? '#16120c' : '#8a7d68', fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 13, fontWeight: 700, transition: 'all .14s',
+            }}>
+              {n}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 // ── EmailJS config ────────────────────────────────────────────────────────────
 // ── Quote modal ───────────────────────────────────────────────────────────────
 
@@ -283,9 +318,9 @@ function buildMailto({ form, quote, lineItems, config }) {
     `Couleur    : ${config.colorName}`,
     `Rampe      : ${config.railingName}`,
     `Marches    : ${config.steps === 0 ? 'aucune' : config.steps}`,
-    `Panneaux intimité : ${config.panels === 0 ? 'aucun' : config.panels}`,
+    `Panneaux intimité : ${config.panels === 0 ? 'aucun' : config.panels + ' · ' + config.panelTypeName}`,
     `Éclairage DEL : ${config.lighting ? 'Oui' : 'Non'}`,
-    `Jupe de patio : ${config.skirt ? 'Oui' : 'Non'}`,
+    `Jupe de patio : ${config.skirt === 0 ? 'Aucune' : `${config.skirt} face(s)`}`,
     `Retrait ancien patio : ${config.removal ? 'Oui' : 'Non'}`,
     `Base sous-patio (en roche) : ${config.gravelBase ? 'Oui' : 'Non'}`,
     `Deck de piscine : ${config.pool ? 'Oui' : 'Non'}`,
@@ -400,8 +435,8 @@ export default function Configurateur() {
   const [s, setS] = useState({
     w: 14, l: 16, h: 3,
     material: 'composite', color: 'oak', compositeType: 'dekavie',
-    railing: 'alu-bois', steps: 4, panels: 0,
-    lighting: false, skirt: false, removal: false, gravelBase: false, pool: false,
+    railing: 'alu-bois', steps: 4, panels: 0, panelType: 'bois-traite',
+    lighting: false, skirt: 0, removal: false, gravelBase: false, pool: false,
     rotY: -32, rotX: -56,
   })
   const [showModal, setShowModal] = useState(false)
@@ -439,7 +474,7 @@ export default function Configurateur() {
   const lineItems = [
     ['Surface · ' + p.area + ' pi²', p.surface],
     p.railing  > 0 && ['Rampe · '          + p.railLen + ' pi lin.', p.railing],
-    p.panels   > 0 && ['Panneaux intimité · ' + s.panels,             p.panels],
+    p.panels   > 0 && ['Panneaux intimité · ' + s.panels + ' · ' + panelTypeObj(s).name, p.panels],
     p.lighting > 0 && ['Éclairage DEL',                               p.lighting],
     p.skirt    > 0 && ['Jupe de patio',                               p.skirt],
     p.removal  > 0 && ['Retrait ancien patio',                        p.removal],
@@ -454,6 +489,7 @@ export default function Configurateur() {
     materialName: matObj(s).name + (s.material === 'composite' ? ' · ' + compTypeObj(s).name : ''),
     colorName:    colorObj(s)[1],
     railingName:  railObj(s).name,
+    panelTypeName: panelTypeObj(s).name,
   }
 
   return (
@@ -502,8 +538,10 @@ export default function Configurateur() {
             <SegGroup  label="Rampe"        opts={RAILINGS} current={s.railing}  onPick={v => set({ railing: v })} />
             <SliderRow label="Marches"      value={s.steps}  min={0} max={12} step={1} display={v => v === 0 ? 'aucune' : v}  onChange={v => set({ steps: v })} />
             <SliderRow label="Panneaux intimité" value={s.panels} min={0} max={8} step={1} display={v => v === 0 ? 'aucun' : v} onChange={v => set({ panels: v })} />
+            {s.panels > 0 &&
+              <SegGroup label="Matériau des panneaux" opts={PANEL_TYPES} current={s.panelType} onPick={v => set({ panelType: v })} />}
             <ToggleRow label="Éclairage DEL intégré"            on={s.lighting} onToggle={() => set({ lighting: !s.lighting })} />
-            <ToggleRow label="Jupe de patio (fermer le dessous)" on={s.skirt}   onToggle={() => set({ skirt: !s.skirt })} />
+            <FaceCountRow label="Jupe de patio (fermer le dessous)" value={s.skirt} onChange={n => set({ skirt: n })} />
             <ToggleRow label="Retirer l'ancien patio"           on={s.removal} onToggle={() => set({ removal: !s.removal })} />
             <ToggleRow label="Base sous-patio (en roche)"       on={s.gravelBase} onToggle={() => set({ gravelBase: !s.gravelBase })} />
             <ToggleRow label="Deck de piscine"                  on={s.pool}    onToggle={() => set({ pool: !s.pool })} />
