@@ -50,11 +50,12 @@ function pricing(s) {
   const skirt   = s.skirt ? railLen * Math.max(s.h, 1) * 14 : 0
   const removal = s.removal ? 850 : 0
   const gravelBase = s.gravelBase ? area * 4.5 : 0
-  const raw  = surface + railing + stairs + panels + lighting + skirt + removal + gravelBase
+  const pool = s.pool ? 6200 : 0
+  const raw  = surface + railing + stairs + panels + lighting + skirt + removal + gravelBase + pool
   const sub  = Math.max(raw, 3800)
   const tax  = sub * 0.14975
   const total= sub + tax
-  return { area, railLen, surface, railing, stairs, panels, lighting, skirt, removal, gravelBase, sub, tax, total,
+  return { area, railLen, surface, railing, stairs, panels, lighting, skirt, removal, gravelBase, pool, sub, tax, total,
     low: total * 0.92, high: total * 1.08, minApplied: raw < 3800 }
 }
 
@@ -104,6 +105,39 @@ function Scene3D({ s, onMouseDown, onTouchStart }) {
   }
   const lift = -(H / 2 + railH / 2)
 
+  let pool = null
+  if (s.pool) {
+    const diameter = Math.min(W, D) * 0.46
+    const margin   = Math.max(scale * 1.1, 10)
+    const cx = W / 2 - diameter / 2 - margin
+    const cy = D / 2 - diameter / 2 - margin
+    const copingStyle = {
+      borderRadius: '50%',
+      background: '#d8cdb8',
+      boxShadow: 'inset 0 0 0 1px rgba(0,0,0,.15)',
+    }
+    const waterStyle = {
+      borderRadius: '50%',
+      background: 'radial-gradient(circle at 50% 50%, #7fd0e6 0%, #4fa9c4 55%, #2f88a8 82%, #1f6c8a 100%)',
+      boxShadow: 'inset 0 0 0 2px rgba(255,255,255,.35), inset 0 0 22px rgba(0,0,0,.18)',
+    }
+    const coping = Math.max(diameter * 0.09, 6)
+    pool = (
+      <>
+        <Face
+          w={diameter} h={diameter}
+          transform={`translate(-50%,-50%) rotateX(90deg) translateZ(${H / 2 + 0.4}px) translate(${cx}px, ${cy}px)`}
+          style={copingStyle}
+        />
+        <Face
+          w={diameter - coping * 2} h={diameter - coping * 2}
+          transform={`translate(-50%,-50%) rotateX(90deg) translateZ(${H / 2 + 0.8}px) translate(${cx}px, ${cy}px)`}
+          style={waterStyle}
+        />
+      </>
+    )
+  }
+
   const stairs = []
   if (s.steps > 0) {
     const ns     = s.steps
@@ -136,6 +170,7 @@ function Scene3D({ s, onMouseDown, onTouchStart }) {
           <Face w={D} h={H} transform={`translate(-50%,-50%) rotateY(90deg) translateZ(${W / 2}px)`} style={struct} />
           <Face w={D} h={H} transform={`translate(-50%,-50%) rotateY(-90deg) translateZ(${W / 2}px)`} style={struct} />
           <Face w={W} h={D} transform={`translate(-50%,-50%) rotateX(90deg) translateZ(${H / 2}px)`} style={deckTop} />
+          {pool}
           {railStyle && <>
             <Face w={W} h={railH} transform={`translate(-50%,-50%) translateZ(${D / 2}px) translateY(${lift}px)`} style={railStyle} />
             <Face w={D} h={railH} transform={`translate(-50%,-50%) rotateY(90deg) translateZ(${W / 2}px) translateY(${lift}px)`} style={railStyle} />
@@ -253,6 +288,7 @@ function buildMailto({ form, quote, lineItems, config }) {
     `Jupe de patio : ${config.skirt ? 'Oui' : 'Non'}`,
     `Retrait ancien patio : ${config.removal ? 'Oui' : 'Non'}`,
     `Base sous-patio (en roche) : ${config.gravelBase ? 'Oui' : 'Non'}`,
+    `Deck de piscine : ${config.pool ? 'Oui' : 'Non'}`,
     '',
     '━━━ DÉTAIL DU PRIX ━━━',
     ...lineItems.map(([l, v]) => `${l.padEnd(30)} ${fmt(v)}`),
@@ -365,7 +401,7 @@ export default function Configurateur() {
     w: 14, l: 16, h: 3,
     material: 'composite', color: 'oak', compositeType: 'dekavie',
     railing: 'alu-bois', steps: 4, panels: 0,
-    lighting: false, skirt: false, removal: false, gravelBase: false,
+    lighting: false, skirt: false, removal: false, gravelBase: false, pool: false,
     rotY: -32, rotX: -56,
   })
   const [showModal, setShowModal] = useState(false)
@@ -408,12 +444,13 @@ export default function Configurateur() {
     p.skirt    > 0 && ['Jupe de patio',                               p.skirt],
     p.removal  > 0 && ['Retrait ancien patio',                        p.removal],
     p.gravelBase > 0 && ['Base sous-patio (en roche) · ' + p.area + ' pi²', p.gravelBase],
+    p.pool     > 0 && ['Deck de piscine',                              p.pool],
   ].filter(Boolean)
 
   const config = {
     w: s.w, l: s.l, h: s.h,
     steps: s.steps, panels: s.panels,
-    lighting: s.lighting, skirt: s.skirt, removal: s.removal, gravelBase: s.gravelBase,
+    lighting: s.lighting, skirt: s.skirt, removal: s.removal, gravelBase: s.gravelBase, pool: s.pool,
     materialName: matObj(s).name + (s.material === 'composite' ? ' · ' + compTypeObj(s).name : ''),
     colorName:    colorObj(s)[1],
     railingName:  railObj(s).name,
@@ -469,6 +506,7 @@ export default function Configurateur() {
             <ToggleRow label="Jupe de patio (fermer le dessous)" on={s.skirt}   onToggle={() => set({ skirt: !s.skirt })} />
             <ToggleRow label="Retirer l'ancien patio"           on={s.removal} onToggle={() => set({ removal: !s.removal })} />
             <ToggleRow label="Base sous-patio (en roche)"       on={s.gravelBase} onToggle={() => set({ gravelBase: !s.gravelBase })} />
+            <ToggleRow label="Deck de piscine"                  on={s.pool}    onToggle={() => set({ pool: !s.pool })} />
           </div>
 
           {/* Summary */}
