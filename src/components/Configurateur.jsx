@@ -12,7 +12,7 @@ const MATERIALS = [
 
 const COLORS = {
   composite:    [['sea-salt','Sea Salt Grey','#b9b1a4'],['maritime','Maritime Gray','#71746f'],['cocoa','Dark Cocoa','#433329'],['teak','Dark Teak','#6e4a2d'],['coconut','Coconut Husk','#8c7155'],['oak','Natural White Oak','#c3a87d']],
-  cedre:        [['naturel','Cèdre naturel','#c08a4f'],['miel','Teinte miel','#ad7438'],['gris','Gris perle','#9b8f7e']],
+  cedre:        [['naturel','Cèdre naturel','#c08a4f']],
   'bois-traite':[['naturel','Naturel','#b89a6a']],
   aluminium:    [['charbon','Charbon','#3c3f43'],['noir','Noir','#262629'],['bronze','Bronze','#5d4b39'],['blanc','Blanc','#d6d2ca']],
   fibre:        [['gris','Gris','#8b8a86'],['sable','Sable','#c2b193'],['charbon','Charbon','#46443f']],
