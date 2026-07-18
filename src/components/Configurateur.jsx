@@ -13,10 +13,16 @@ const MATERIALS = [
 const COLORS = {
   composite:    [['sea-salt','Sea Salt Grey','#b9b1a4'],['maritime','Maritime Gray','#71746f'],['cocoa','Dark Cocoa','#433329'],['teak','Dark Teak','#6e4a2d'],['coconut','Coconut Husk','#8c7155'],['oak','Natural White Oak','#c3a87d']],
   cedre:        [['naturel','Cèdre naturel','#c08a4f'],['miel','Teinte miel','#ad7438'],['gris','Gris perle','#9b8f7e']],
-  'bois-traite':[['brun','Brun','#7a5a3a'],['naturel','Naturel','#b89a6a'],['gris','Gris','#8d8275']],
+  'bois-traite':[['naturel','Naturel','#b89a6a']],
   aluminium:    [['charbon','Charbon','#3c3f43'],['noir','Noir','#262629'],['bronze','Bronze','#5d4b39'],['blanc','Blanc','#d6d2ca']],
   fibre:        [['gris','Gris','#8b8a86'],['sable','Sable','#c2b193'],['charbon','Charbon','#46443f']],
 }
+
+const COMPOSITE_TYPES = [
+  { id: 'dekavie',    name: 'Dekavie (QC)', rate: 65 },
+  { id: 'trex',       name: 'Trex',         rate: 78 },
+  { id: 'timbertech', name: 'TimberTech',   rate: 82 },
+]
 
 const RAILINGS = [
   { id: 'none',     name: 'Aucune',      rate: 0  },
@@ -30,11 +36,13 @@ function matObj(s)   { return MATERIALS.find(m => m.id === s.material) || MATERI
 function colorList(s){ return COLORS[s.material] || COLORS.composite }
 function colorObj(s) { const l = colorList(s); return l.find(c => c[0] === s.color) || l[0] }
 function railObj(s)  { return RAILINGS.find(r => r.id === s.railing) || RAILINGS[0] }
+function compTypeObj(s) { return COMPOSITE_TYPES.find(c => c.id === s.compositeType) || COMPOSITE_TYPES[0] }
+function matRate(s)  { return s.material === 'composite' ? compTypeObj(s).rate : matObj(s).rate }
 
 function pricing(s) {
   const area    = s.w * s.l
   const railLen = s.l + 2 * s.w
-  const surface = area * matObj(s).rate
+  const surface = area * matRate(s)
   const railing = (s.railing !== 'none' && s.h >= 2) ? railLen * railObj(s).rate : 0
   const stairs  = 0
   const panels  = s.panels * 385
@@ -355,7 +363,7 @@ function QuoteModal({ quote, lineItems, config, onClose }) {
 export default function Configurateur() {
   const [s, setS] = useState({
     w: 14, l: 16, h: 3,
-    material: 'composite', color: 'oak',
+    material: 'composite', color: 'oak', compositeType: 'dekavie',
     railing: 'alu-bois', steps: 4, panels: 0,
     lighting: false, skirt: false, removal: false, gravelBase: false,
     rotY: -32, rotX: -56,
@@ -406,7 +414,7 @@ export default function Configurateur() {
     w: s.w, l: s.l, h: s.h,
     steps: s.steps, panels: s.panels,
     lighting: s.lighting, skirt: s.skirt, removal: s.removal, gravelBase: s.gravelBase,
-    materialName: matObj(s).name,
+    materialName: matObj(s).name + (s.material === 'composite' ? ' · ' + compTypeObj(s).name : ''),
     colorName:    colorObj(s)[1],
     railingName:  railObj(s).name,
   }
@@ -451,6 +459,8 @@ export default function Configurateur() {
             <SliderRow label="Longueur"     value={s.l}     min={6}  max={40} step={1}   display={v => v + ' pi'}              onChange={v => set({ l: v })} />
             <SliderRow label="Hauteur du sol" value={s.h}   min={0}  max={12} step={0.5} display={v => v + ' pi'}              onChange={v => set({ h: v })} />
             <SegGroup  label="Matériau"     opts={MATERIALS} current={s.material} onPick={pickMaterial} />
+            {s.material === 'composite' &&
+              <SegGroup label="Type de composite" opts={COMPOSITE_TYPES} current={s.compositeType} onPick={v => set({ compositeType: v })} />}
             <SwatchRow s={s} onPick={c => set({ color: c })} />
             <SegGroup  label="Rampe"        opts={RAILINGS} current={s.railing}  onPick={v => set({ railing: v })} />
             <SliderRow label="Marches"      value={s.steps}  min={0} max={12} step={1} display={v => v === 0 ? 'aucune' : v}  onChange={v => set({ steps: v })} />
