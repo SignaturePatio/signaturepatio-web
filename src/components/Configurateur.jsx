@@ -3,7 +3,7 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 const ACCENT = '#e8632e'
 
 const MATERIALS = [
-  { id: 'composite',   name: 'Composite',      rate: 72 },
+  { id: 'composite',   name: 'Composite',      rate: 65 },
   { id: 'cedre',       name: 'Cèdre',          rate: 52 },
   { id: 'bois-traite', name: 'Bois traité',    rate: 38 },
   { id: 'aluminium',   name: 'Aluminium',      rate: 90 },

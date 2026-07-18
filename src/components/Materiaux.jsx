@@ -1,5 +1,5 @@
 const MATS = [
-  { price: '~72$/pi²', name: 'Composite',      desc: 'Zéro entretien, 25 ans de garantie. Le best-seller.',          stripe1: '#8c7155', stripe2: '#7c624a' },
+  { price: '~65$/pi²', name: 'Composite',      desc: 'Zéro entretien, 25 ans de garantie. Le best-seller.',          stripe1: '#8c7155', stripe2: '#7c624a' },
   { price: '~52$/pi²', name: 'Cèdre',          desc: 'Beauté naturelle, résistance innée à la pourriture.',          stripe1: '#c08a4f', stripe2: '#ad7a3f' },
   { price: '~38$/pi²', name: 'Bois traité',    desc: "L'option abordable et robuste, été après été.",               stripe1: '#b89a6a', stripe2: '#a98c5e' },
   { price: '~90$/pi²', name: 'Aluminium',      desc: 'Léger, ignifuge, parfait pour les toits-terrasses.',          stripe1: '#52555a', stripe2: '#46484c' },
